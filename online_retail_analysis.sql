@@ -1,3 +1,8 @@
+-- ============================================================
+-- ABC ANALYSIS - ONLINE RETAIL
+-- SQL DATA CLEANING, ANALYSIS & CLASSIFICATION
+-- ============================================================
+
 create database abc_analysis;
 
 use abc_analysis;
@@ -33,6 +38,10 @@ IGNORE 1 ROWS;
 
 DESCRIBE online_retail_raw;
 
+-- ============================================================
+-- 1. DATA CLEANING
+-- ============================================================
+
 CREATE TABLE retail_clean AS
 SELECT
     Invoice,
@@ -58,34 +67,6 @@ SELECT
 FROM retail_clean;
 
 DESCRIBE retail_clean;
-
-SELECT
-    COUNT(*) AS duplicate_groups,
-    SUM(duplicate_count) AS rows_in_duplicate_groups,
-    SUM(duplicate_count - 1) AS rows_to_remove
-FROM (
-    SELECT
-        Invoice,
-        StockCode,
-        Description,
-        Quantity,
-        InvoiceDate,
-        Price,
-        Customer_ID,
-        Country,
-        COUNT(*) AS duplicate_count
-    FROM retail_clean
-    GROUP BY
-        Invoice,
-        StockCode,
-        Description,
-        Quantity,
-        InvoiceDate,
-        Price,
-        Customer_ID,
-        Country
-    HAVING COUNT(*) > 1
-) AS duplicates;
 
 SELECT
     Invoice,
@@ -139,7 +120,9 @@ FROM (
     HAVING COUNT(*) > 1
 ) AS duplicates;
 
-DROP TABLE IF EXISTS retail_final;
+-- ============================================================
+-- 2. DUPLICATE REMOVAL
+-- ============================================================
 
 CREATE TABLE retail_final AS
 SELECT DISTINCT
@@ -182,8 +165,11 @@ FROM (
 SELECT
     (SELECT COUNT(*) FROM retail_clean) AS clean_rows,
     (SELECT COUNT(*) FROM retail_final) AS final_rows;
-    
-    
+
+-- ============================================================
+-- 3. PRODUCT-LEVEL SALES ANALYSIS
+-- ============================================================ 
+
 CREATE TABLE product_sales AS
 SELECT
     StockCode,
@@ -221,6 +207,10 @@ SELECT
     ROUND(SUM(Revenue_Percentage), 2) AS total_revenue_percentage
 FROM product_sales;
 
+-- ============================================================
+-- 4. ABC CLASSIFICATION
+-- ============================================================
+
 CREATE TABLE abc_analysis AS
 SELECT
     StockCode,
@@ -238,6 +228,10 @@ FROM product_sales;
 SELECT ABC_Category, COUNT(*)
 FROM abc_analysis
 GROUP BY ABC_Category;
+
+-- ============================================================
+-- 5. FINAL ANALYSIS
+-- ============================================================
 
 SELECT
     ABC_Category,
